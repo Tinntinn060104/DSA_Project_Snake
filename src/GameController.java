@@ -199,11 +199,10 @@ public class GameController {
     // DFS Algorithm for level 2
     private void moveSnakeDFS() {
         Point head = snake.get(snake.size() - 1);
-        
         if (tryMoveDirectlyToFood()) {
             return;
         }
-        
+        System.out.println("RUN DFS");
         List<Point> path = findPathToFoodDFS(head, new HashSet<>(), new HashMap<>(), 0, 50);
         if (path != null && path.size() > 1) {
             Point nextMove = path.get(1);
@@ -213,86 +212,6 @@ public class GameController {
         }
         checkGameStatus();
     }
-
-    // A* Algorithm for level 3
-    private void moveSnakeAStar() {
-        List<Point> path = findPathToFoodAStar();
-        if (path.size() > 1) {
-            Point nextMove = path.get(1);
-            moveSnakeTo(nextMove);
-        } else {
-            moveRandomly();
-        }
-        checkGameStatus();
-    }
-
-    private List<Point> findPathToFoodAStar() {
-    Point head = snake.get(snake.size() - 1);
-    Map<Point, Point> cameFrom = new HashMap<>();
-    Map<Point, Integer> gScore = new HashMap<>();
-    Map<Point, Integer> fScore = new HashMap<>();
-    PriorityQueue<Point> openSet = new PriorityQueue<>(Comparator.comparingInt(p -> fScore.getOrDefault(p, Integer.MAX_VALUE)));
-    gScore.put(head, 0);
-    fScore.put(head, heuristic(head, food));
-    openSet.add(head);
-    cameFrom.put(head, null);
-
-    while (!openSet.isEmpty()) {
-        Point current = openSet.poll();
-
-        if (current.equals(food)) {
-            return reconstructPath(cameFrom, current);
-        }
-
-        for (int[] direction : DIRECTIONS) {
-            Point neighbor = new Point(current.x + direction[0], current.y + direction[1]);
-
-            if (!isValidMove(neighbor)) continue;
-
-            int tentativeG = gScore.get(current) + 1;
-
-            if (tentativeG < gScore.getOrDefault(neighbor, Integer.MAX_VALUE)) {
-                cameFrom.put(neighbor, current);
-                gScore.put(neighbor, tentativeG);
-                fScore.put(neighbor, tentativeG + heuristic(neighbor, food));
-
-                if (!openSet.contains(neighbor)) {
-                    openSet.add(neighbor);
-                }
-            }
-        }
-    }
-        return Collections.emptyList(); 
-    }
-
-    private int heuristic(Point a, Point b) {
-        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-    }
-
-    private boolean tryMoveDirectlyToFood() {
-        Point head = snake.get(snake.size() - 1);
-        int dx = Integer.compare(food.x, head.x);
-        int dy = Integer.compare(food.y, head.y);
-        
-        if (dx != 0) {
-            Point next = new Point(head.x + dx, head.y);
-            if (isValidMove(next)) {
-                moveSnakeTo(next);
-                return true;
-            }
-        }
-        
-        if (dy != 0) {
-            Point next = new Point(head.x, head.y + dy);
-            if (isValidMove(next)) {
-                moveSnakeTo(next);
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
     private List<Point> findPathToFoodDFS(Point current, Set<Point> visited, Map<Point, Point> cameFrom, int depth, int maxDepth) {
         if (depth > maxDepth) {
             return null;
@@ -320,6 +239,84 @@ public class GameController {
         
         return null;
     }
+    // A* Algorithm for level 3
+    private void moveSnakeAStar() {
+        List<Point> path = findPathToFoodAStar();
+        if (path.size() > 1) {
+            Point nextMove = path.get(1);
+            moveSnakeTo(nextMove);
+        } else {
+            moveRandomly();
+        }
+        checkGameStatus();
+    }
+
+    private List<Point> findPathToFoodAStar() {
+        Point head = snake.get(snake.size() - 1);
+        Map<Point, Point> cameFrom = new HashMap<>();
+        Map<Point, Integer> gScore = new HashMap<>();
+        Map<Point, Integer> fScore = new HashMap<>();
+        PriorityQueue<Point> openSet = new PriorityQueue<>(Comparator.comparingInt(p -> fScore.getOrDefault(p, Integer.MAX_VALUE)));
+        gScore.put(head, 0);
+        fScore.put(head, heuristic(head, food));
+        openSet.add(head);
+        cameFrom.put(head, null);
+
+        while (!openSet.isEmpty()) {
+            Point current = openSet.poll();
+
+            if (current.equals(food)) {
+                return reconstructPath(cameFrom, current);
+            }
+
+            for (int[] direction : DIRECTIONS) {
+                Point neighbor = new Point(current.x + direction[0], current.y + direction[1]);
+
+                if (!isValidMove(neighbor)) continue;
+
+                int tentativeG = gScore.get(current) + 1;
+
+                if (tentativeG < gScore.getOrDefault(neighbor, Integer.MAX_VALUE)) {
+                    cameFrom.put(neighbor, current);
+                    gScore.put(neighbor, tentativeG);
+                    fScore.put(neighbor, tentativeG + heuristic(neighbor, food));
+
+                    if (!openSet.contains(neighbor)) {
+                        openSet.add(neighbor);
+                    }
+                }
+            }
+        }
+        return Collections.emptyList(); 
+    }
+
+    private int heuristic(Point a, Point b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+
+    private boolean tryMoveDirectlyToFood() {
+        Point head = snake.get(snake.size() - 1);
+        int dx = Integer.compare(food.x, head.x);
+        int dy = Integer.compare(food.y, head.y);
+        if (dx != 0 && dy==0) { //
+            Point next = new Point(head.x + dx, head.y);
+            if (isValidMove(next)) {
+                moveSnakeTo(next);
+                return true;
+            }
+        }
+        
+        if (dy != 0 && dx == 0) { //
+            Point next = new Point(head.x, head.y + dy);
+            if (isValidMove(next)) {
+                moveSnakeTo(next);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
     private List<int[]> getPrioritizedDirections(Point current) {
         List<int[]> dirs = new ArrayList<>(Arrays.asList(DIRECTIONS));
