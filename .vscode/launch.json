@@ -5,7 +5,7 @@
             "name": "Main",
             "request": "launch",
             "mainClass": "Main",
-            "projectName": "DSA_Project_Final_449e5da9",
+            "projectName": "DSA_Project_Snake_4557a573",
             "vmArgs": "--module-path C:/javafx-sdk-21.0.7/lib --add-modules javafx.controls"
         }
     ]
